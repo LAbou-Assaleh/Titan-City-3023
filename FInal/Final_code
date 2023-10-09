@@ -386,11 +386,6 @@ def start_titan_survivor_game():
 
     grey_color = (105, 105, 105)
 
-    replay_Pic = pygame.image.load("replay_icon.png")
-    replayWidth = replay_Pic.get_width()//5
-    replayHeight = replay_Pic.get_width()//5
-    replayPic = pygame.transform.scale(replay_Pic, (replayWidth, replayHeight))
-
 
     background_image = pygame.image.load("terrain2.png")
     background_image = pygame.transform.scale(background_image, (display_width, display_height))  
