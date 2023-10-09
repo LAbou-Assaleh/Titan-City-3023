@@ -23,7 +23,7 @@ def navigation():
     iarray = []
     mlist = []
     pygame.init()
-    ship = pygame.image.load("ship.png")
+    ship = pygame.image.load("Ship.png")
     boom = pygame.image.load("boom.png")
     btn = pygame.image.load("launch.png")
     titan = pygame.image.load("TITAN.png")
