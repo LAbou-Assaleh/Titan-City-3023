@@ -1,0 +1,965 @@
+import pygame
+import random
+import sys 
+import time
+from pygame import font
+import threading
+import sys
+import time
+from pygame.locals import QUIT
+
+
+def navigation():
+    go = False
+    gray = (128, 128, 128)
+    blue = (0, 0, 255)
+    green = (0, 255, 0)
+    red = (255, 0, 0)
+    white = (255, 255, 255)
+    black = (0, 0, 0)
+    shayaanBlue = (1, 23, 45)
+    astroidpos = []
+    linepos = []
+    iarray = []
+    mlist = []
+    pygame.init()
+    ship = pygame.image.load("ship.png")
+    boom = pygame.image.load("boom.png")
+    btn = pygame.image.load("launch.png")
+    titan = pygame.image.load("TITAN.png")
+    mars = pygame.image.load("mars.png")
+    imp = pygame.image.load("NavBackgroundv2.png")
+    m1 = pygame.image.load("meteor1.png")
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption('Navigation')
+    amask = pygame.mask.from_surface(m1)
+    tmask = pygame.mask.from_surface(titan)
+    mmask = pygame.mask.from_surface(mars)
+    smask = pygame.mask.from_surface(ship)
+
+    def path():
+        pathcords = []
+        x = 545
+        y = 485
+        while x > 250 or y > 100:
+            if x > 250:
+                x -= random.randrange(-5, 10)
+            if y > 100:
+                y -= random.randrange(-5, 10)
+            pathcords.append([x, y])
+        return pathcords
+
+    array = path()
+    def launch():
+        end = False
+        clock = pygame.time.Clock()
+        x = 545
+        y = 485
+        while len(linepos) > 0:
+            # print(linepos[0][0], linepos[0][1], x, y)
+            dx = linepos[0][0] - x
+            dy = linepos[0][1] - y
+            d = pygame.math.Vector2(dx, dy).length()
+            while d > 2:
+                dx = linepos[0][0] - x
+                dy = linepos[0][1] - y
+                d = pygame.math.Vector2(dx, dy).length()
+                if d > 2:
+                    direction = pygame.math.Vector2(dx, dy).normalize()
+                    x += direction.x * 2
+                    y += direction.y * 2
+                    x = int(x)
+                    y = int(y)
+                screen.fill(shayaanBlue)
+                screen.blit(mars, (520, 460))
+                screen.blit(titan, (200, 40))
+                screen.blit(ship, (x, y))
+                pygame.draw.circle(screen, white, (250, 100), 10)
+                screen.blit(imp, (0, 0))
+                for i in range(len(astroidpos)):
+                    screen.blit(m1, astroidpos[i])
+                    if amask.overlap(smask, (astroidpos[i][0] - x, astroidpos[i][1] - y)):
+                        end = True
+                if end:
+                    screen.fill(black)
+                    font = pygame.font.SysFont('Retro Game', 50)
+                    txt = font.render("Mission Failed!", True, red)
+                    screen.blit(imp, (0, 0))
+                    screen.blit(txt, (260, 270))
+                    pygame.display.flip()
+                    pygame.time.wait(3000)
+                    pygame.quit()
+                    sys.exit(0)
+                pygame.display.flip()
+                clock.tick(120)
+            linepos.pop(0)
+            # x = linepos[0][0]
+            # y = linepos[0][1]
+            # a = smask.to_surface()
+            # screen.fill(shayaanBlue)
+            # screen.blit(mars, (520, 460))
+            # screen.blit(titan, (200, 40))
+            # screen.blit(a, (x, y))
+            # pygame.draw.circle(screen, white, (250, 100), 10)
+            # screen.blit(imp, (0, 0))
+            # for i in range(len(astroidpos)):
+            #     m = amask.to_surface()
+            #     if amask.overlap(smask, (astroidpos[i][0] - x, astroidpos[i][1] - y)):
+            #         print(amask.get_size())
+            #         print(astroidpos[i], (x, y), (astroidpos[i][0] - x, astroidpos[i][1] - y))
+            #         print(amask.overlap_area(smask, (astroidpos[i][0] - x, astroidpos[i][1] - y)))
+            #         print(amask.overlap(smask, (astroidpos[i][0] - x, astroidpos[i][1] - y)))
+            #         print("collide")
+            #         end = True
+            #         screen.fill(shayaanBlue)
+            #         screen.blit(mars, (520, 460))
+            #         screen.blit(titan, (200, 40))
+            #         screen.blit(a, (x, y))
+            #         pygame.draw.circle(screen, white, (250, 100), 10)
+            #         screen.blit(imp, (0, 0))
+            #     screen.blit(m, astroidpos[i])
+            #     if end:
+            #         break
+            # linepos.pop(0)
+            # pygame.display.flip()
+            # clock.tick(120)
+            # if end:
+            #     return
+    def collide(x, y):
+        for i in array:
+            if (x - i[0] <= 30 and x-i[0] >= -30) and (y - i[1] <= 30 and y - i[1] >= -30):
+                return True
+        return False
+
+
+    def generate():
+        x = random.randrange(210, 560)
+        y = random.randrange(50, 430)
+        while ((x > 560 or x < 300) and (y > 440 or y < 140)) or collide(x, y):
+            # print(x - array[0][0], array[0][0], x)
+            # print(x, y)
+            x = random.randrange(210, 560)
+            y = random.randrange(50, 500)
+        astroidpos.append((x,y))
+
+        return (x, y)
+    def end(x, y):
+        if x > 325 and x < 475 and y > 540:
+            return True
+        else:
+            return False
+
+    screen.fill(shayaanBlue)
+    screen.blit(mars, (520, 460))
+    screen.blit(titan, (200, 40))
+    screen.blit(ship, (545, 485))
+    pygame.draw.circle(screen, white, (250, 100), 10)
+    screen.blit(imp, (0, 0))
+    screen.blit(btn, (325, 540))
+    for i in range(30):
+        screen.blit(m1, generate())
+    pygame.display.flip()
+    while True:
+        for event in pygame.event.get():
+            x, y = pygame.mouse.get_pos()
+            press = pygame.mouse.get_pressed()
+            if end(x, y) and press[0]:
+                launch()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEMOTION and x > 200 and x < 600 and y > 40 and y <540:
+                if event.buttons[0]:
+                    last = (event.pos[0] - event.rel[0], event.pos[1] - event.rel[1])
+                    pygame.draw.line(screen, white, last, event.pos, 3)
+                    linepos.append([x, y])
+            if pygame.mouse.get_pressed()[2]:
+                linepos.clear()
+                screen.fill(shayaanBlue)
+                screen.blit(mars, (520, 460))
+                screen.blit(titan, (200, 40))
+                screen.blit(ship, (545, 485))
+                pygame.draw.circle(screen, white, (250, 100), 10)
+                screen.blit(imp, (0, 0))
+                screen.blit(btn, (325, 540))
+                for i in range(len(astroidpos)):
+                    screen.blit(m1, astroidpos[i])
+            pygame.display.flip()
+
+
+def titan_frontier():
+    pygame.init()
+    place = {}
+    map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    screen = pygame.display.set_mode((800, 600))
+    house = pygame.image.load("house.png")
+    fuel = pygame.image.load("methane.png")
+    water = pygame.image.load("water.png")
+    wind = pygame.image.load("wind.png")
+    font = pygame.font.SysFont("Times New Roman", 10)
+    class Store:
+        water = 0
+        plastic = 0
+        energy = 0
+        brick = 300
+        index = {2 : [100, 100, 10, 100], 3: [100, 0, 0, 100], 0 : [50, 100, 100, 100], 1 : [100, 50, 0, 100]}
+        def __init__(self, plastic = 400, energy = 400, water = 400, brick = 450):
+            self.plastic = plastic
+            self.energy = energy
+            self.water = water
+            self.brick = brick
+
+
+        def addWater(self, amount):
+            self.water += amount
+
+        def addBrick(self, amount):
+            self.brick += amount
+
+        def addPlastic(self, amount):
+            self.plastic += amount
+
+        def addEnergy(self, amount):
+            self.energy += amount
+        
+        def getWater(self):
+            return self.water
+        
+        def getPlastic(self):
+            return self.plastic
+        
+        def getEnergy(self):
+            return self.energy
+        def getBrick(self):
+            return self.brick
+        
+        def build(self, item):
+            need = self.index[item]
+            if self.plastic >= need[0] and self.energy >= need[1] and self.water >= need[2] and self.brick >= need[3]:
+                self.plastic -= need[0]
+                self.energy -= need[1]
+                self.water -= need[2]
+                self.brick -= need[3]
+                return True
+            else:
+                return False
+    ms = 0
+    hs = 0
+    ws = 0
+    ts = 0
+    menu = pygame.image.load("menu.png")
+    store = Store()
+    gray = (128, 128, 128)
+    blue = (0, 0, 255)
+    green = (0, 255, 0)
+    red = (255, 0, 0)
+    white = (255, 255, 255)
+    black = (0, 0, 0)
+    shayaanBlue = (1, 23, 45)
+    item = -1
+    pygame.draw.rect(screen, white, (700, 0 ,100, 600))
+    screen.blit(menu, (700, 0))
+    bg = pygame.image.load("floor.png")
+    def add():
+        store = Store()
+        while True:
+            store.addEnergy(10 * ts)
+            store.addWater(10 * ws)
+            store.addBrick(10 * ms)
+            store.addPlastic(10 * hs)
+            time.sleep(1)
+
+    thread = threading.Thread(target=add)
+    thread.start()
+    while True:
+        screen.blit(bg, (0, 0))
+        pygame.draw.rect(screen, white, (700, 0, 100, 600))
+        screen.blit(menu, (700, 0))
+        for event in pygame.event.get():
+            pygame.draw.rect(screen, white, (700, 480, 100, 220))
+            txt = str(store.getWater()) + " " + str(store.getBrick()) + " " + str(store.getEnergy()) + " " + str(store.getPlastic())
+            txt = font.render(txt, True, black)
+            screen.blit(txt, (715, 540))
+            x, y = pygame.mouse.get_pos()
+            for i in place.keys():
+                if place[i] == 0:
+                    screen.blit(house, (i[0]*50, i[1]*50))
+                if place[i] == 1:
+                    screen.blit(water, (i[0]*50, i[1]*50))
+                if place[i] == 2:
+                    screen.blit(fuel, (i[0]*50, i[1]*50))
+                if place[i] == 3:
+                    screen.blit(wind, (i[0]*50, i[1]*50))
+            if event == pygame.QUIT:
+                pygame.quit()
+                sys.exit(0)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_0:
+                    item = 0
+                if event.key == pygame.K_1:
+                    item = 1
+                if event.key == pygame.K_2:
+                    item = 2
+                if event.key == pygame.K_3:
+                    item = 3
+                if event.key == pygame.K_4:
+                    item = 4
+            if pygame.mouse.get_pressed()[0]:
+                if x > 700:
+                    if y <120:
+                        item = 0
+                    if y > 120 and y <240:
+                        item = 1
+                    if y > 240 and y < 360:
+                        item = 2
+                    if y > 360 and y < 480:
+                        item = 3
+                    if y > 480:
+                        item = 4
+                else:
+                    px = x/50
+                    py = y/50
+                    if px > (len(map[0])-1):
+                        px = len(map[0])-1
+                    if py > len(map)-1:
+                        py = len(map) - 1
+                    px = int(px)
+                    py = int(py)
+                    if map[py][px] == 0:
+                        if item in store.index.keys():
+                            if store.build(item):
+                                map[py][px] = "I"
+                                if item == 0:
+                                    screen.blit(house, (px*50, py*50))
+                                    place[(px, py)] = item
+                                    hs += 1
+                                if item == 1:
+                                    screen.blit(water, (px*50, py*50))
+                                    place[(px, py)] = item
+                                    ws += 1
+                                if item == 2:
+                                    screen.blit(fuel, (px*50, py*50))
+                                    place[(px, py)] = item
+                                    ms += 1
+                                if item == 3:
+                                    screen.blit(wind, (px*50, py*50))
+                                    place[(px, py)] = item
+                                    ts += 1
+                                pygame.draw.rect(screen, white, (700, 480, 100, 220))
+                                txt = str(store.getWater()) + " " + str(store.getBrick()) + " " + str(store.getEnergy()) + " " + str(store.getPlastic())
+                                txt = font.render(txt, True, black)
+                                screen.blit(txt, (715, 540))
+            if item == 0:
+                screen.blit(house, (x-25, y-25))
+            if item == 1:
+                screen.blit(water, (x-25, y-25))
+            if item == 2:
+                screen.blit(fuel, (x-25, y-25))
+            if item == 3:
+                screen.blit(wind, (x-25, y-25))
+            pygame.display.flip()
+
+
+
+
+
+
+def start_titan_survivor_game():
+    pygame.init()
+
+    PLAYER_SPEED = 3
+    screen_width, screen_height = 800, 600
+    display_width, display_height = 2500, 2000  
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    pygame.display.set_caption("Titan City!")
+
+
+    grey_color = (105, 105, 105)
+
+    replay_Pic = pygame.image.load("replay_icon.png")
+    replayWidth = replay_Pic.get_width()//5
+    replayHeight = replay_Pic.get_width()//5
+    replayPic = pygame.transform.scale(replay_Pic, (replayWidth, replayHeight))
+
+
+    background_image = pygame.image.load("terrain2.png")
+    background_image = pygame.transform.scale(background_image, (display_width, display_height))  
+
+
+    player_left_image = pygame.image.load('rover.png')
+    player_down_image = pygame.transform.rotate(player_left_image, 90)
+    player_up_image = pygame.transform.rotate(player_left_image, 270)
+    player_right_image = pygame.transform.rotate(player_left_image, 180)
+
+
+    player_image = player_down_image
+    player_rect = player_image.get_rect()
+    player_x, player_y = 400, 500 
+
+
+    clock = pygame.time.Clock()
+
+
+    score = 0
+
+
+    x_velocity, y_velocity = 0, 0
+
+    spawn_area_rect = pygame.Rect(500, 500, display_width - 1000, display_height - 1000)
+
+
+    circles = []
+
+    # Generate random circles within the specified area
+    for _ in range(5):  
+        color = (128, 128, 128)
+        radius = 10
+        x = random.randint(spawn_area_rect.left + radius, spawn_area_rect.right - radius)
+        y = random.randint(spawn_area_rect.top + radius, spawn_area_rect.bottom - radius)
+        circles.append((color, (x, y), radius))
+
+
+    welcome_screen = True
+    game_started = False
+
+    while welcome_screen:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                welcome_screen = False
+
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                welcome_screen = False
+                game_started = True
+
+        
+        grey_rect = pygame.Rect(0, display_height - screen_height, display_width, screen_height - display_height)
+        pygame.draw.rect(screen, grey_color, grey_rect)
+
+    
+        font = pygame.font.Font(None, 36)
+
+    
+        welcome_message = "Welcome to Titan City! Your mission should you choose to accept is to locate all the missing parts on Titan(Press Enter To Begin)"
+        
+        # Split the message into multiple lines if it exceeds the width of the screen
+        max_line_length = screen_width - 40 
+        lines = []
+        words = welcome_message.split()
+        current_line = ""
+        
+        for word in words:
+            test_line = current_line + " " + word if current_line else word
+            test_text = font.render(test_line, True, (255, 255, 255))
+            
+            if test_text.get_width() <= max_line_length:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        
+        lines.append(current_line)
+
+        
+        total_height = len(lines) * font.get_linesize()
+
+        
+        y_offset = (screen_height - total_height) // 2
+
+    
+        for line in lines:
+            welcome_text = font.render(line, True, (255, 255, 255))
+            screen.blit(welcome_text, (screen_width // 2 - welcome_text.get_width() // 2, y_offset))
+            y_offset += font.get_linesize()
+
+        
+        pygame.display.update()
+
+
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+    
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and player_x > 0:
+            x_velocity = -PLAYER_SPEED
+            player_image = player_left_image
+        elif keys[pygame.K_RIGHT] and player_x < display_width - player_rect.width:
+            x_velocity = PLAYER_SPEED
+            player_image = player_right_image
+        else:
+            x_velocity = 0
+
+        if keys[pygame.K_UP] and player_y > 0:
+            y_velocity = -PLAYER_SPEED
+            player_image = player_up_image
+        elif keys[pygame.K_DOWN] and player_y < display_height - player_rect.height:
+            y_velocity = PLAYER_SPEED
+            player_image = player_down_image
+        else:
+            y_velocity = 0
+
+    
+        player_x += x_velocity
+        player_y += y_velocity
+
+    
+        camera_x = player_x - screen_width // 2
+        camera_y = player_y - screen_height // 2
+
+        grey_rect = pygame.Rect(0, display_height - screen_height, display_width, screen_height - display_height)
+        pygame.draw.rect(screen, grey_color, grey_rect)
+
+        
+        screen.blit(background_image, (-camera_x, -camera_y))
+
+    
+        player_rect.center = (player_x - camera_x, player_y - camera_y)
+        screen.blit(player_image, player_rect)
+
+        # Draw random circles
+        for i, (color, (x, y), radius) in enumerate(circles):
+            circle_rect = pygame.Rect(x - camera_x - radius, y - camera_y - radius, 2 * radius, 2 * radius)
+            pygame.draw.circle(screen, color, circle_rect.center, radius)
+
+
+            if player_rect.colliderect(circle_rect):
+            
+                del circles[i]
+                score += 1 
+                break
+
+        font = pygame.font.Font(None, 36)
+
+    
+        score_text = font.render("Score: " + str(score) + " of Five", True, (255, 255, 255))
+
+    
+        screen.blit(score_text, (10, 10))
+
+
+        pygame.display.update()
+
+        
+        clock.tick(60)
+
+    
+        if len(circles) == 0:
+            running = False
+
+
+    font = pygame.font.Font(None, 48)
+    congratulations_text = font.render("Congratulations! You won", True, (255, 255, 255))
+    screen.fill((0, 0, 0))  
+    screen.blit(congratulations_text, (screen_width // 2 - congratulations_text.get_width() // 2, screen_height // 2 - 50))
+    pygame.display.update()
+
+
+    pygame.time.delay(1000)  # Delay for 1 seconds
+
+
+    pygame.quit()
+
+    pygame.init()
+
+    screen_width, screen_height = 800, 600
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    grey_color = (128, 128, 128)
+
+
+    new_screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("FACTS ABOUT TITAN")
+
+
+    font = pygame.font.Font(None, 24)
+
+    facts = [
+        "Thick Atmosphere: Titan has a dense and hazy atmosphere primarily composed of nitrogen, with trace amounts of methane and other hydrocarbons. It's the only moon in our solar system known to have a substantial atmosphere.",
+        "Liquid Lakes: Titan's surface features numerous lakes and seas, but they aren't filled with water like Earth's. Instead, they contain liquid methane and ethane, making them some of the only stable bodies of liquid found outside of Earth.",
+        "Titan is Saturn's largest moon and the second-largest moon in the solar system, only slightly smaller than Jupiter's Ganymede. It has a radius of about 1,600 miles (2,575 kilometers) and is larger than Earth's moon and even the planet Mercury. It orbits Saturn at a distance of approximately 759,000 miles (1.2 million kilometers).",
+        "Cold Environment: Titan is an extremely cold world, with surface temperatures averaging around -290 degrees Fahrenheit (-179 degrees Celsius). Its harsh conditions make it inhospitable to human life without specialized equipment.",
+        "Cassini-Huygens Mission: The Cassini-Huygens mission, conducted by NASA and the European Space Agency, provided valuable data about Titan. In 2005, the Huygens probe successfully landed on Titan's surface, giving us our first close-up view of the moon and its environment."
+    ]
+
+
+    fact_boxes = [
+        pygame.Rect(50, 10, 700, 100),
+        pygame.Rect(50, 150, 700, 100),
+        pygame.Rect(50, 300, 700, 100),
+        pygame.Rect(50, 450, 700, 100),
+        pygame.Rect(50, 600, 700, 100),
+    ]
+
+
+    for i, fact in enumerate(facts):
+        pygame.draw.rect(screen, grey_color, fact_boxes[i])  # Draw the box
+
+        words = fact.split(" ")
+        lines = []
+        current_line = ""
+        for word in words:
+            test_line = current_line + " " + word if current_line else word
+            test_text = font.render(test_line, True, (255, 255, 255))
+            if test_text.get_width() <= fact_boxes[i].width - 20:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        lines.append(current_line)
+
+    
+        y_offset = 10
+        for line in lines:
+            fact_text = font.render(line, True, (255, 255, 255))
+            screen.blit(fact_text, (fact_boxes[i].x + 10, fact_boxes[i].y + y_offset))
+            y_offset += fact_text.get_height()
+
+
+    pygame.display.flip()
+
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+    # Quit Pygame
+    pygame.quit()
+
+def minigame_1():
+    pygame.init()
+
+    run = True
+
+    #game window
+    SCREEN_WIDTH = 800
+    SCREEN_HEIGHT = 600
+
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption('Mission to Titan')
+
+    # Load and resize the background image
+    background_image = pygame.image.load("NASA mission planning.png") 
+    # Replace "background.jpg" with your image file name
+    background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    # Load and resize the launch button image
+    launch_button_image = pygame.image.load("Launch.png").convert_alpha()
+    launch_button_image = pygame.transform.scale(launch_button_image, (150, 75))
+
+    # Colours
+    WHITE = (255, 255, 255)
+    DARK_BLUE = (0, 3, 38)
+
+
+    # Fonts
+    font = pygame.font.SysFont("Times New Roman", 20)
+
+    # Setup variables
+    run = True
+    check_made = False
+    active_box = None
+    boxes = []
+    texts = ['Liftoff', 'First Stage Separation', 'Second Stage Ignition', 'Second Stage Separation']
+
+    # Define thes submit button and its color
+    submit_button = pygame.Rect(325, 520, 100, 75)  # X, Y, Width, Height
+    submit_color = (0, 255, 0)  # Blue color for the button
+
+    # Randomize the order of boxes
+    random.shuffle(texts)
+
+    # Unique IDs to texts and boxes
+    box_dict = {}
+    for i, text in enumerate(texts):
+        x = 250
+        y = 100 + i * 113 # Vertical spacing between boxes
+        w = 300
+        h = 50
+        box = pygame.Rect(x, y, w, h)
+        boxes.append(box)
+        box_dict[text] = box
+
+    original_positions = [
+        box_dict['Liftoff'].topleft,
+        box_dict['First Stage Separation'].topleft,
+        box_dict['Second Stage Ignition'].topleft,
+        box_dict['Second Stage Separation'].topleft
+    ]
+
+    # Draws text onto boxes
+    def draw_text(text, font, text_col, x, y):
+        img = font.render(text, True, text_col)
+        screen.blit(img, (x,y))
+
+    #def draw_screen_text(text, font, text_col, x, y):
+    #for i in text:
+        
+
+    #-----------------------
+
+    # Mission acceptance phase
+    screen.fill(pygame.Color("black"))
+    draw_text("Captain, your mission, should you choose to accept it,", font, (255, 255, 255), 30, 30)
+
+    pygame.display.flip()
+
+    exit = True
+
+    while exit:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                exit = False
+    
+    draw_text("is to plan out our takeoff sequence.", font, (255, 255, 255), 30, 70)
+
+    draw_text("You must place the launch order steps in the correct order.", font, (255, 255, 255), 30, 110)
+
+
+    pygame.display.flip()
+
+    exit = True
+
+    while exit:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                exit = False
+
+    draw_text("The success of this mission to Titan lies in your hands.", font, (255, 255, 255), 30, 150)
+
+    pygame.display.flip()
+
+    exit = True
+
+    while exit:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                exit = False
+
+    draw_text("Click anywhere to start the mission: ", font, (255, 255, 255), 30, 190)
+
+    pygame.display.flip()
+
+    exit = True
+
+    while exit:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                exit = False
+
+    draw_text("Mission accepted. Proceed with the launch sequence.", font, (255, 255, 255), 30, 230)
+
+    pygame.display.flip()
+
+    exit = True
+
+    while exit:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                exit = False
+
+    #-----------------------
+
+    def ending_screen():
+        screen.fill(pygame.Color("black"))
+
+        draw_text("Launch sequence is in correct order!", font, (255, 255, 255), 30, 30)
+
+        draw_text("Congratulations, Captain!", font, (255, 255, 255), 30, 70)
+        
+        draw_text("You have successfully launched your spaceship out of Mars' atmosphere.", font, (255, 255, 255), 30, 110)
+
+        draw_text("Your crew is heading for Titan, good luck on the mission.", font, (255, 255, 255), 30, 150)
+        
+        
+        pygame.display.flip()
+        
+        exit = True
+        
+        while exit:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    exit = False
+
+
+    def retry_screen():
+        screen.fill(pygame.Color("black"))
+
+        draw_text("Launch sequence is not in correct order, click r to try and submit again.", font, (255, 255, 255), 30, 10)
+        
+        pygame.display.flip()
+        
+        exit = True
+        
+        while exit:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    exit = False
+
+
+
+
+
+
+    # Main game loop
+    while run:
+    # Draws the background image
+        screen.blit(background_image, (0, 0))
+        
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                for num, box in enumerate(boxes):
+                    if box.collidepoint(event.pos):
+                        active_box = num
+
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                active_box = None
+
+            if event.type == pygame.MOUSEMOTION and active_box != None:
+                boxes[active_box].move_ip(event.rel)
+
+            if event.type == pygame.QUIT:
+                run = False
+
+
+            # Checks if boxes are in order based on order
+            option1_bottom = box_dict['Liftoff'].bottom
+            option2_bottom = box_dict['First Stage Separation'].bottom
+            option3_bottom = box_dict['Second Stage Ignition'].bottom
+            option4_bottom = box_dict['Second Stage Separation'].bottom
+        
+            # Checks if the mouse click occurs within the submit button's area
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if submit_button.collidepoint(event.pos) and not check_made:
+                    option1_bottom = box_dict['Liftoff'].bottom
+                    option2_bottom = box_dict['First Stage Separation'].bottom
+                    option3_bottom = box_dict['Second Stage Ignition'].bottom
+                    option4_bottom = box_dict['Second Stage Separation'].bottom
+
+                if option1_bottom < option2_bottom < option3_bottom < option4_bottom:
+                    ending_screen()
+                else:
+                    retry_screen()
+                    check_made = True  # Set check_made to True after the check
+
+            # If the user wants to retry, reset check_made to False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                check_made = False
+                
+        i = 0
+        # Updates and draws the launch sequence
+        for box in boxes:
+            pygame.draw.rect(screen, DARK_BLUE, box)
+            draw_text(texts[i], font, (255, 255, 255), box.x + 10, box.y + 20)
+            i += 1
+
+        # Draw the launch button
+        launch_button_rect = screen.blit(launch_button_image, (325, 520))
+
+        pygame.display.flip()
+    
+    pygame.quit()
+    
+
+pygame.init()
+
+size = width, height = 800, 600
+screen = pygame.display.set_mode(size)
+myClock = pygame.time.Clock()
+font1 = pygame.font.Font(None, 36)  # Decrease font size for menu items
+font2 = pygame.font.Font(None, 56)  # Decrease font size for the title
+font3 = pygame.font.Font(None, 24)  # Decrease font size for rules
+
+GREY = (127, 127, 127)
+
+backgroundPic = pygame.image.load("space.jpeg")
+backgroundPic = pygame.transform.scale(backgroundPic, (width, height))
+
+def drawScene(screen, backx):
+    # left side
+    screen.blit(backgroundPic, pygame.Rect(backx, 0, width, height))  # draw the picture
+    # right side
+    screen.blit(backgroundPic, pygame.Rect(backx + width, 0, width, height))
+
+running = True
+backgroundX = 0
+current_screen = "Menu"
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Draw the background
+    drawScene(screen, backgroundX)
+    backgroundX -= 1
+    if backgroundX <= -width:
+        backgroundX = 0
+
+    text = "Mission Planner"
+    renderedText = font1.render(text, 1, (255, 255, 255))
+    fontSize = font1.size(text)
+    button_width = 300  # Adjust the button width
+    button_height = 80  # Adjust the button height
+    startX = (width - button_width) // 2  # Center horizontally
+    startY = (height - 4 * (button_height)) // 2  # Center vertically and shift upwards
+    centeredRect = pygame.Rect(startX, startY, button_width, button_height)
+    pygame.draw.rect(screen, GREY, centeredRect)
+    screen.blit(renderedText, (startX + (button_width - fontSize[0]) // 2, startY + (button_height - fontSize[1]) // 2))
+
+    text2 = "Colonial"
+    renderedText2 = font1.render(text2, 1, (255, 255, 255))
+    rectangle2 = pygame.Rect(startX, startY + button_height + 20, button_width, button_height)  # Adjust the button size and position
+    pygame.draw.rect(screen, GREY, rectangle2)
+    screen.blit(renderedText2, (startX + (button_width - fontSize[0]) // 2, startY + button_height + 20 + (button_height - fontSize[1]) // 2))
+
+    text3 = "Navigation"
+    renderedText3 = font1.render(text3, 1, (255, 255, 255))
+    rectangle3 = pygame.Rect(startX, startY + 2 * (button_height + 20), button_width, button_height)  # Adjust the button size and position
+    pygame.draw.rect(screen, GREY, rectangle3)
+    screen.blit(renderedText3, (startX + (button_width - fontSize[0]) // 2, startY + 2 * (button_height + 20) + (button_height - fontSize[1]) // 2))
+
+    text4 = "Titan Survivor"
+    renderedText4 = font1.render(text4, 1, (255, 255, 255))
+    rectangle4 = pygame.Rect(startX, startY + 3 * (button_height + 20), button_width, button_height)  # Adjust the button size and position
+    pygame.draw.rect(screen, GREY, rectangle4)
+    screen.blit(renderedText4, (startX + (button_width - fontSize[0]) // 2, startY + 3 * (button_height + 20) + (button_height - fontSize[1]) // 2))
+
+    title_text = "Titan Frontier: " 
+    title_text2 = "Exploration of the Unkown"
+    title_render = font2.render(title_text, 1, (255, 255, 255))
+    title_render2 = font2.render(title_text2, 1, (255, 255, 255))
+    title_width = title_render.get_width()
+    title_width2 = title_render2.get_width()
+    screen.blit(title_render, ((width - title_width) // 2, 25))  # Center the title horizontally
+    screen.blit(title_render2, ((width - title_width2) // 2, 75))
+
+    pygame.display.flip()
+    myClock.tick(60)
+
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            if rectangle4.collidepoint(x, y):
+                start_titan_survivor_game()
+            elif centeredRect.collidepoint(x, y):
+                minigame_1()
+            elif rectangle2.collidepoint(x,y):
+                titan_frontier()
+            elif rectangle3.collidepoint(x,y):
+                navigation()
+
+pygame.quit()
